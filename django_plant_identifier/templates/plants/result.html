@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load plant_extras %}
+
+{% block title %}Plant Identification Result - Plant Identifier{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-8">
+            <a href="{% url 'plants_index' %}" class="inline-flex items-center text-green-600 hover:text-green-700 transition duration-300">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Home
+            </a>
+        </div>
+
+        <div class="bg-white rounded-xl p-8 shadow-lg">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-6">
+                    <div class="aspect-w-4 aspect-h-3 rounded-xl overflow-hidden shadow-lg">
+                        <img src="{{ imageUrl }}" alt="Uploaded plant" class="w-full h-full object-cover transform hover:scale-105 transition duration-500">
+                    </div>
+                    <div class="text-center space-y-4">
+                        <a href="{% url 'plants_index' %}" class="inline-flex items-center justify-center px-6 py-3 gradient-bg text-white font-semibold rounded-xl hover:opacity-90 transition duration-300 shadow-md">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                            </svg>
+                            Identify Another Plant
+                        </a>
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    {% for title, content in sections.items %}
+                        <div class="bg-green-50 rounded-xl p-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4 break-words">{{ title }}</h2>
+                            <div class="space-y-3">
+                                {% for line in content %}
+                                    {% if line|slice:":1" == "-" %}
+                                        <div class="flex items-start space-x-3">
+                                            <svg class="w-5 h-5 text-green-500 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            <p class="text-gray-700">{{ line|slice:"1:"|trim }}</p>
+                                        </div>
+                                    {% elif line|slice:":1" == "*" %}
+                                        <div class="flex items-start space-x-3 ml-6">
+                                            <span class="w-2 h-2 rounded-full bg-green-500 mt-2 flex-shrink-0"></span>
+                                            <p class="text-gray-600">{{ line|slice:"1:"|trim }}</p>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-gray-700">{{ line }}</p>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    {% if sections.Match_Confidence %}
+                        <div class="bg-gray-50 rounded-xl p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-700">Confidence Score</span>
+                                {% with score=sections.Match_Confidence.0 %}
+                                    {% with score_value=score|cut:"Identification confidence score: "|cut:"%"|trim %}
+                                        <span class="text-sm font-semibold text-gray-900">{{ score_value }}%</span>
+                                    {% endwith %}
+                                {% endwith %}
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                {% with score=sections.Match_Confidence.0 %}
+                                    {% with score_value=score|cut:"Identification confidence score: "|cut:"%"|trim %}
+                                        <div class="gradient-bg h-2.5 rounded-full" style="width: {{ score_value }}%"></div>
+                                    {% endwith %}
+                                {% endwith %}
+                            </div>
+                            {% with score=sections.Match_Confidence.0 %}
+                                {% with score_value=score|cut:"Identification confidence score: "|cut:"%"|trim|floatformat:0 %}
+                                    {% if score_value < 80 %}
+                                        <p class="mt-2 text-sm text-amber-600">
+                                            <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                            </svg>
+                                            This identification has a lower confidence score. Consider taking another photo or consulting with a plant expert for verification.
+                                        </p>
+                                    {% endif %}
+                                {% endwith %}
+                            {% endwith %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

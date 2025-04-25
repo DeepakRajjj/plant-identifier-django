@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}My Listings{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">My Listings</h1>
+    <div class="flex space-x-4">
+      <a href="{% url 'add_plant' %}" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition duration-300">
+        + Add New Plant
+      </a>
+      <a href="{% url 'market_home' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-300">
+        Back to Market
+      </a>
+    </div>
+  </div>
+
+  <!-- Active Listings -->
+  <div class="mb-10">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Active Listings</h2>
+
+    {% if active_listings %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for plant in active_listings %}
+      <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300">
+        <div class="h-48 overflow-hidden">
+          <img src="{{ plant.image.url }}" alt="{{ plant.name }}" class="w-full h-full object-cover">
+        </div>
+        <div class="p-4">
+          <div class="flex justify-between items-start">
+            <h3 class="text-xl font-semibold text-gray-800">{{ plant.name }}</h3>
+            <span class="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded">₹{{ plant.price }}</span>
+          </div>
+          <p class="text-gray-600 mt-2 text-sm line-clamp-3">{{ plant.description }}</p>
+          <div class="flex justify-between mt-2">
+            <span class="text-sm {% if plant.quantity_available < 5 %}text-orange-500 font-medium{% else %}text-gray-500{% endif %}">
+              {{ plant.quantity_available }} unit{% if plant.quantity_available != 1 %}s{% endif %} available
+            </span>
+          </div>
+          <div class="mt-2 text-sm text-gray-500">
+            Listed on: {{ plant.date_listed|date:"M d, Y" }}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow-md p-8 text-center">
+      <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+      </svg>
+      <h3 class="mt-4 text-xl font-medium text-gray-700">No active listings</h3>
+      <p class="mt-2 text-gray-500">You don't have any plants currently listed for sale.</p>
+      <div class="mt-6">
+        <a href="{% url 'add_plant' %}" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition duration-300">
+          Add a Plant
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Sold Listings -->
+  <div>
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Sold Plants</h2>
+
+    {% if sold_listings %}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Plant
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Price
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Quantity Sold
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Listed Date
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Buyer
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for plant in sold_listings %}
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10">
+                  <img class="h-10 w-10 rounded-full object-cover" src="{{ plant.image.url }}" alt="{{ plant.name }}">
+                </div>
+                <div class="ml-4">
+                  <div class="text-sm font-medium text-gray-900">{{ plant.name }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900">₹{{ plant.price }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900">{{ plant.total_sold }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900">{{ plant.date_listed|date:"M d, Y" }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900">
+                {% for purchase in plant.purchases.all %}
+                  {{ purchase.buyer.username }}
+                {% empty %}
+                  Unknown
+                {% endfor %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow-md p-8 text-center">
+      <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <h3 class="mt-4 text-xl font-medium text-gray-700">No sold plants</h3>
+      <p class="mt-2 text-gray-500">You haven't sold any plants yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
